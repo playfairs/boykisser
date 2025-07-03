@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #media-container {
+            max-width: 90%;
+            max-height: 90vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #media-content {
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9f7ef;
+            border-radius: 5px;
+            text-align: center;
+            max-width: 600px;
+        }
+        video {
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+<body>
+    <div id="media-container">
+        <span class="message">Loading media...</span>
+    </div>
+
+    <script>
+        const supportedFormats = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.mp4', '.webm', '.ogg'];
+
+        function getFileExtension(filename) {
+            return filename.slice((filename.lastIndexOf(".") - 1 >>> 0) + 2).toLowerCase();
+        }
+
+        function isVideoFile(filename) {
+            const ext = getFileExtension(filename);
+            return ['.mp4', '.webm', '.ogg'].includes('.' + ext);
+        }
+
+        function createMediaElement(url, filename) {
+            const container = document.getElementById('media-container');
+            container.innerHTML = '';
+            
+            if (isVideoFile(filename)) {
+                const video = document.createElement('video');
+                video.controls = true;
+                video.autoplay = true;
+                video.loop = true;
+                video.muted = true;
+                video.playsInline = true;
+                video.src = url;
+                container.appendChild(video);
+            } else {
+                const img = new Image();
+                img.src = url;
+                img.alt = 'Random media';
+                img.id = 'media-content';
+                container.appendChild(img);
+            }
+        }
+
+        function loadRandomMedia() {
+            const container = document.getElementById('media-container');
+            
+            fetch('assets/filenames.json')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(filenames => {
+                    const mediaFiles = filenames.filter(filename => {
+                        const ext = getFileExtension(filename);
+                        return supportedFormats.includes('.' + ext);
+                    });
+
+                    if (mediaFiles.length === 0) {
+                        throw new Error('No supported media files found');
+                    }
+
+                    const randomIndex = Math.floor(Math.random() * mediaFiles.length);
+                    const randomFile = mediaFiles[randomIndex];
+                    const mediaUrl = 'assets/' + randomFile;
+                    
+                    createMediaElement(mediaUrl, randomFile);
+                })
+                .catch(error => {
+                    console.error('Error loading media:', error);
+                    container.innerHTML = `
+                        <div class="message">
+                            Error loading media. Please check the console for details.
+                            ${error.message ? `<br><small>${error.message}</small>` : ''}
+                        </div>`;
+                });
+        }
+
+        window.onload = loadRandomMedia;
+    </script>
+</body>
+</html>

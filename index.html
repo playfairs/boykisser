@@ -112,11 +112,9 @@
                     createMediaElement(mediaUrl, randomFile);
                 })
                 .catch(error => {
-                    console.error('Error loading media:', error);
                     container.innerHTML = `
                         <div class="message">
-                            Error loading media. Please check the console for details.
-                            ${error.message ? `<br><small>${error.message}</small>` : ''}
+                            Error loading media: ${error.message}
                         </div>`;
                 });
         }
